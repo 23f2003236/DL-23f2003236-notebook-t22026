@@ -1,43 +1,60 @@
-import os
+"""
+config.py
+=========
+Single source of truth for every hyperparameter, path, and constant used
+across the Smart MCQ Solver project. Every notebook (01_eda -> 06_ensemble)
+used these exact values during training, so inference MUST use the same
+ones or predictions will not match the trained checkpoints.
+"""
+
 from pathlib import Path
 
-# PROJECT PATHS 
-PROJECT_ROOT = Path(__file__).parent.parent
-
-# Data paths
-DATA_DIR = PROJECT_ROOT / "data"
-TRAIN_CSV = DATA_DIR / "train.csv"
-TEST_CSV = DATA_DIR / "test.csv"
-SAMPLE_SUBMISSION_CSV = DATA_DIR / "sample_submission.csv"
-
-# Output path
-OUTPUT_DIR = PROJECT_ROOT / "outputs"
-MODELS_DIR = OUTPUT_DIR / "models"
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+BASE_DIR       = Path(__file__).resolve().parent.parent
+DATA_DIR       = BASE_DIR / "data"
+OUTPUT_DIR     = BASE_DIR / "outputs"
+CHECKPOINT_DIR = OUTPUT_DIR / "checkpoints"
 PREDICTIONS_DIR = OUTPUT_DIR / "predictions"
-LOGS_DIR = OUTPUT_DIR / "logs"
+LOGS_DIR       = OUTPUT_DIR / "logs"
 
-# Ensure the directories exist
-os.makedirs(MODELS_DIR, exist_ok=True)
-os.makedirs(PREDICTIONS_DIR, exist_ok=True)
-os.makedirs(LOGS_DIR, exist_ok=True)
+for d in (CHECKPOINT_DIR, PREDICTIONS_DIR, LOGS_DIR):
+    d.mkdir(parents=True, exist_ok=True)
 
+# ---------------------------------------------------------------------------
+# Answer label maps (used identically in all 4 model notebooks)
+# ---------------------------------------------------------------------------
+ANSWER_MAP  = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4}
+REVERSE_MAP = {v: k for k, v in ANSWER_MAP.items()}
+OPTION_COLS = list("ABCDE")
 
-ANSWER_MAP = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4}
-REVERSE_MAP = {idx: letter for letter, idx in ANSWER_MAP.items()}
-OPTION_COLS = ["A", "B", "C", "D", "E"]
-TEXT_COLS = ["prompt", *OPTION_COLS]
+# ---------------------------------------------------------------------------
+# Reproducibility
+# ---------------------------------------------------------------------------
+RANDOM_STATE = 42
 
-SEED = 42
-
-BASELINE_CFG = {
-    "text_strategy": "v1_simple",
-    "max_features": 5000,
+# ---------------------------------------------------------------------------
+# 1. TF-IDF + Logistic Regression baseline  (02_baseline.ipynb)
+#    Best strategy in the notebook was picked dynamically (max val MAP@3);
+#    all three text-builder strategies are implemented in preprocessing.py.
+#    Standalone leaderboard score: 0.751
+# ---------------------------------------------------------------------------
+TFIDF_CFG = {
+    "text_strategy": "v3_labeled",   # change if a different variant was your best
+    "max_features": 15000,
     "min_df": 2,
     "max_df": 0.9,
-    "ngram_range": (1, 2),
-    "lr_C": 1.0,
+    "ngram_range": (1, 3),
+    "lr_C": 3.0,
+    "model_path": CHECKPOINT_DIR / "tfidf_best_lr_model.pkl",
+    "vectorizer_path": CHECKPOINT_DIR / "tfidf_best_vectorizer.pkl",
 }
 
+# ---------------------------------------------------------------------------
+# 2. LSTM from scratch (03_lstm.ipynb)
+#    Standalone leaderboard score: 0.7543
+# ---------------------------------------------------------------------------
 LSTM_CFG = {
     "vocab_size": 10000,
     "max_len": 256,
@@ -46,41 +63,65 @@ LSTM_CFG = {
     "num_layers": 2,
     "dropout": 0.4,
     "num_classes": 5,
-    "batch_size": 32,
-    "learning_rate": 1e-3,
-    "epochs": 50,
-    "patience": 7,
-    "weight_decay": 1e-4,
-    "random_state": SEED,
+    "checkpoint_path": CHECKPOINT_DIR / "lstm_best.pt",
+    "tokenizer_path": CHECKPOINT_DIR / "lstm_tokenizer.pkl",
 }
 
+# ---------------------------------------------------------------------------
+# 3. DeBERTa-v3-small option scorer (04_DeBERTa.ipynb)
+#    Standalone leaderboard score: 0.7547 (best single model)
+# ---------------------------------------------------------------------------
 DEBERTA_CFG = {
     "model_name": "microsoft/deberta-v3-small",
     "max_len": 256,
-    "batch_size": 16,
-    "lr": 2e-5,
-    "weight_decay": 0.01,
-    "epochs": 5,
-    "warmup_ratio": 0.1,
-    "patience": 3,
     "dropout": 0.3,
-    "pos_class_weight": 4.0,
-    "seed": SEED,
+    "checkpoint_path": CHECKPOINT_DIR / "deberta_best.pt",
 }
+
+# ---------------------------------------------------------------------------
+# 4. RoBERTa multiple-choice (05_RoBERTa.ipynb)
+#    NOTE: the notebook loaded RoBERTa from a local Kaggle model path
+#    ('/kaggle/input/models/sachin62/roberta-base/...'). For deployment we
+#    use the public HF Hub id 'roberta-base' instead — same weights family,
+#    but portable outside Kaggle. If your fine-tuned checkpoint depends on
+#    that exact base, keep this pointed at 'roberta-base' (architecture is
+#    identical) and only the checkpoint_path state_dict matters.
+#    Standalone leaderboard score: 0.75436
+# ---------------------------------------------------------------------------
+ROBERTA_CFG = {
+    "model_name": "roberta-base",
+    "max_len": 128,
+    "checkpoint_path": CHECKPOINT_DIR / "roberta_best.pt",
+}
+
+# ---------------------------------------------------------------------------
+# 5. Ensemble weights (06_ensemble.ipynb) — weighted rank ensemble
+#    Tuned empirically against the leaderboard. Must sum to 1.0.
+#    Final ensemble leaderboard score: 0.76018 (best overall)
+# ---------------------------------------------------------------------------
+ENSEMBLE_WEIGHTS = {
+    "tfidf": 0.15,
+    "lstm": 0.20,
+    "deberta": 0.40,
+    "roberta": 0.25,
+}
+
+assert abs(sum(ENSEMBLE_WEIGHTS.values()) - 1.0) < 1e-9, "Ensemble weights must sum to 1.0!"
+
+# ---------------------------------------------------------------------------
+# Individual model standalone scores (for reference / README / app.py display)
+# ---------------------------------------------------------------------------
+LEADERBOARD_SCORES = {
+    "tfidf": 0.7510,
+    "lstm": 0.7543,
+    "roberta": 0.75436,
+    "deberta": 0.7547,
+    "ensemble": 0.76018,
+}
+
 
 # WANDB SETTINGS
 WANDB_PROJECT = "23f2003236-t22026"
 WANDB_ENTITY = "23f2003236"  
 
-def print_config():
-    """Print all configuration settings"""
 
-    print(f"Project Root: {PROJECT_ROOT}")
-    print(f"Train CSV: {TRAIN_CSV}")
-    print(f"Test CSV: {TEST_CSV}")
-    print(f"Output Directory: {OUTPUT_DIR}")
-    print(f"WANDB Project: {WANDB_PROJECT}")
-    print(f"WANDB Entity: {WANDB_ENTITY}")
-
-if __name__ == "__main__":
-    print_config()
