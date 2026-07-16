@@ -30,7 +30,10 @@ class DeBERTaOptionScorer(nn.Module):
 
     def __init__(self, model_name: str, dropout: float = 0.3):
         super().__init__()
-        self.backbone = AutoModel.from_pretrained(model_name)
+        # Force fp32: some HF checkpoints ship fp16 weights by default under
+        # torch_dtype="auto", which then mismatches our fp32 classification
+        # head (RuntimeError: mat1 and mat2 must have the same dtype).
+        self.backbone = AutoModel.from_pretrained(model_name, torch_dtype=torch.float32)
         hidden_size = self.backbone.config.hidden_size
         self.drop = nn.Dropout(dropout)
         self.fc = nn.Linear(hidden_size, 2)  # binary: wrong vs correct

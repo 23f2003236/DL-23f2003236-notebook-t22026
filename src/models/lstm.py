@@ -105,6 +105,13 @@ class LSTMModel:
         self.model: LSTMClassifier = None
 
     def load(self) -> "LSTMModel":
+        # The tokenizer was pickled from inside a notebook, where MCQTokenizer
+        # lived in the __main__ module. When unpickling from any other script
+        # (like this one, or app.py), Python looks for MCQTokenizer in
+        # __main__ and fails unless we register it there first.
+        import sys
+        sys.modules["__main__"].MCQTokenizer = MCQTokenizer
+
         self.tokenizer = load_pickle(self.tokenizer_path)
         self.model = LSTMClassifier(
             vocab_size=LSTM_CFG["vocab_size"],

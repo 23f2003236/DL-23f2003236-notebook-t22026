@@ -80,12 +80,6 @@ DEBERTA_CFG = {
 
 # ---------------------------------------------------------------------------
 # 4. RoBERTa multiple-choice (05_RoBERTa.ipynb)
-#    NOTE: the notebook loaded RoBERTa from a local Kaggle model path
-#    ('/kaggle/input/models/sachin62/roberta-base/...'). For deployment we
-#    use the public HF Hub id 'roberta-base' instead — same weights family,
-#    but portable outside Kaggle. If your fine-tuned checkpoint depends on
-#    that exact base, keep this pointed at 'roberta-base' (architecture is
-#    identical) and only the checkpoint_path state_dict matters.
 #    Standalone leaderboard score: 0.75436
 # ---------------------------------------------------------------------------
 ROBERTA_CFG = {

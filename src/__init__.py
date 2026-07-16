@@ -1,11 +1,5 @@
-from .tfidf import TFIDFModel
-from .lstm import LSTMModel, LSTMClassifier, MCQTokenizer
-from .deberta import DeBERTaModel, DeBERTaOptionScorer
-from .roberta import RoBERTaModel
+"""Smart MCQ Solver — production src package."""
 
-__all__ = [
-    "TFIDFModel",
-    "LSTMModel", "LSTMClassifier", "MCQTokenizer",
-    "DeBERTaModel", "DeBERTaOptionScorer",
-    "RoBERTaModel",
-]
+from .predict import predict
+
+__all__ = ["predict"]
