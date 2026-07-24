@@ -63,6 +63,10 @@ DL-23f2003236-notebook-t22026/
    combined using weighted voting (weights: TF-IDF 0.15, LSTM 0.20, DeBERTa 0.40,
    RoBERTa 0.25) to get the final top-3 prediction.
 
+## kaggle lb score 
+<img width="1444" height="98" alt="image" src="https://github.com/user-attachments/assets/3eec9e79-70c3-4415-97ea-0ac4fe8b648b" />
+
+
 ## Important note: data leakage found
 
 During EDA, 242 duplicate question rows were found inside `train.csv` (some
@@ -82,12 +86,17 @@ score, every epoch. This makes it easy to compare all 3 runs side by side.
 
 ## How to run
 
-1. Install requirements:
-   ```bash
+1. Clone the repository:
+```bash
+   git clone https://github.com/23f2003236/DL-23f2003236-notebook-t22026.git
+   cd DL-23f2003236-notebook-t22026
+```
+2. Install requirements:
+```bash
    pip install -r requirements.txt
-   ```
-2. Open `notebooks/Smart_MCQ_Solver_Final.ipynb` and run all cells top to bottom.
-3. Make sure `data/train.csv` and `data/test.csv` are present (or update the path
+```
+3. Open `notebooks/Smart_MCQ_Solver_Final.ipynb` and run all cells top to bottom.
+4. Make sure `data/train.csv` and `data/test.csv` are present (or update the path
    to the Kaggle dataset location).
 
 ## Full report
