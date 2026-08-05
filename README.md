@@ -25,21 +25,25 @@ The final ensemble score (0.7602) is better than every single model alone.
 
 ```
 DL-23f2003236-notebook-t22026/
-├── data/                    # train.csv, test.csv, sample_submission.csv
-├── notebooks/                # Original working notebooks (EDA, baseline, LSTM, DeBERTa, RoBERTa, ensemble)
-│   └── final_nb.ipynb   # Everything combined in one notebook
-├── milestones/               # Milestone work saved during the project
-├── src/                       # Clean, reusable production code
-│   ├── config.py             # All hyperparameters and paths
-│   ├── preprocessing.py       # Text cleaning + prompt building
-│   ├── dataset.py             # PyTorch Dataset classes
-│   ├── metrics.py             # MAP@3 metric
-│   ├── ensemble.py            # Weighted rank ensemble logic
-│   ├── inference.py           # Loads models, runs predictions
-│   ├── predict.py             # Main function used by the app
-│   └── models/                # Model architectures (tfidf, lstm, deberta, roberta)
-├── kaggle_notebook.ipynb       # Notebook used for Kaggle submission
-├── project_report.pdf          # Full project report
+├── data/ # train.csv, test.csv, sample_submission.csv
+├── notebooks/ # Original working notebooks (EDA, baseline, LSTM, DeBERTa, RoBERTa, ensemble)
+│ └── Smart_MCQ_Solver_Final.ipynb # Everything combined in one notebook
+├── milestones/ # Milestone work saved during the project
+├── deployment/ # Standalone Gradio app deployed to HF Spaces
+│ ├── app.py
+│ ├── requirements.txt
+│ └── README.md # Live demo link + deployment notes
+├── src/ # Clean, reusable production code
+│ ├── config.py # All hyperparameters and paths
+│ ├── preprocessing.py # Text cleaning + prompt building
+│ ├── dataset.py # PyTorch Dataset classes
+│ ├── metrics.py # MAP@3 metric
+│ ├── ensemble.py # Weighted rank ensemble logic
+│ ├── inference.py # Loads models, runs predictions
+│ ├── predict.py # Main function used by the app
+│ └── models/ # Model architectures (tfidf, lstm, deberta, roberta)
+├── kaggle_notebook.ipynb # Notebook used for Kaggle submission
+├── project_report.pdf # Full project report
 ├── requirements.txt
 └── .gitignore
 ```
@@ -95,7 +99,7 @@ score, every epoch. This makes it easy to compare all 3 runs side by side.
 ```bash
    pip install -r requirements.txt
 ```
-3. Open `notebooks/Smart_MCQ_Solver_Final.ipynb` and run all cells top to bottom.
+3. Open `notebooks/final_nb.ipynb` and run all cells top to bottom.
 4. Make sure `data/train.csv` and `data/test.csv` are present (or update the path
    to the Kaggle dataset location).
 
